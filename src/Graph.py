@@ -3,6 +3,7 @@ import networkx as nx
 import collections
 import matplotlib.pyplot as plt
 from CentralityComper import CentralityComper as CC
+import os
 
 
 class Graph:
@@ -15,11 +16,12 @@ class Graph:
         self.n_nodes = self.G.number_of_nodes()
         self.n_edges = self.G.number_of_edges()
         self.giant = max(nx.connected_components(self.G), key=len)
-        self.density = self.get_density_diameter()
-        self.get_density_diameter()
+        self.diameter, self.density = self.get_density_diameter()
+        self.clustering = self.get_clustering()
+        self.middle_degree = self.get_middle_degree()
 
     def read_network(self, network):
-        with open('../data/' + network, 'r') as json_file:
+        with open('..' + os.path.sep + 'data' + os.path.sep + network, 'r') as json_file:
             data = json.load(json_file)
             return data
 
@@ -49,17 +51,33 @@ class Graph:
         print('Número de vértices = ' + str(self.n_nodes))
         print('Número de arestas = ' + str(self.n_edges))
         print('Densidade = ' + str(self.density))
-        print('Grau médio = ' + str(nx.degree(self.giant)))
+        print('Diâmetro = ' + str(self.diameter))
+        print('Clustering Médio = ' + str(self.clustering))
+        print('Gráu médio = ' + str(self.middle_degree))
         print('-------------------------Características Básicas-------------------------')
 
     def get_density_diameter(self):
         density = nx.density(self.G)
-        diameter = nx.diameter(self.giant)
-        return density
+        diameter = nx.diameter(self.G)
+        return diameter, density
 
-    def get_average_degree(self):
-        degree = nx.degree(max(self.giant))
-        print(degree)
+    def get_middle_degree(self):
+        degrees = nx.degree(self.G)
+        total = 0
+        
+        for degree in degrees:
+            total += degree[1]
+
+        return total / self.n_nodes
+
+    def get_clustering(self):
+        clusterings = nx.clustering(self.G)
+
+        total = 0
+        for i in range(0, len(clusterings)):
+            total += clusterings[i]
+
+        return total / self.n_nodes
 
     def draw_graph(self):
         pos = nx.spring_layout(self.G)
